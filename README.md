@@ -39,7 +39,7 @@ Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth, G.,
 
 Loman, N. J., Quick, J., & Simpson, J. T. (2015). A complete bacterial genome assembled de novo using only nanopore sequencing data. Nature Methods, 12(8), 733–735. https://doi.org/10.1038/nmeth.3444
 
-Paranthaman, K., Mook, P., Curtis, D., Evans, E.-W., Crawley-Boevey, E., Dabke, G., Carroll, K., McCormick, J., Dallman, T. J., & Crook, P. (2021). Development and evaluation of an outbreak surveillance system integrating whole genome sequencing data for non-typhoidal Salmonella in London and South East of England, 2016–17. Epidemiology and Infection, 149, e164. https://doi.org/DOI: 10.1017/S0950268821001400
+Paranthaman, K., Mook, P., Curtis, D., Evans, E.-W., Crawley-Boevey, E., Dabke, G., Carroll, K., McCormick, J., Dallman, T. J., & Crook, P. (2021). Development and evaluation of an outbreak surveillance system integrating whole genome sequencing data for non-typhoidal Salmonella in London and South East of England, 2016–17. Epidemiology and Infection, 149, e164. https://doi.org/10.1017/S0950268821001400
 
 Robinson, J. T., Thorvaldsdóttir, H., Wenger, A. M., Zehir, A., & Mesirov, J. P. (2017). Variant Review with the Integrative Genomics Viewer. Cancer Research, 77(21), e31–e34. https://doi.org/10.1158/0008-5472.CAN-17-0337
 
