@@ -1,0 +1,67 @@
+# Workflow to assemble S. enterica genome isolate (SRR32410565)
+# This workflow was done on a Mac laptop running on arm64/Aarch64, M4 chip
+
+# FASTQ files for the isolate and reference genome can be downloaded with the links below:
+# https://trace.ncbi.nlm.nih.gov/Traces/?view=run_browser&acc=SRR32410565&display=metadata
+# https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000006945.2/
+
+# Filter low quality reads using Filtlong v0.3.1
+filtlong --min_length 1000 --keep_percent 90 -q 20 SRR32410565.fastq > SRR32410565_q20_filtlong.fastq
+
+# Quality check with Nanoplot v1.46.2 after filtering
+Nanoplot --fastq filtered_q20.fastq -o nanoplot_output_filtered_q20/
+
+# Assembly with Flye v2.9.6
+flye -t 5 --genome-size 5m --asm-coverage 100 --nano-hq SRR32410565_q20_filtlong.fastq -o flye_output_hq_q20
+
+# Polish flye assembly with Medaka v2.1.1, reads to consensus
+medaka_consensus -i SRR32410565_q20_filtlong.fastq -d flye_output_hq_q20/assembly.fasta -o consensus -t 5 -m r1041_e82_400bps_sup_v5.0.0
+
+# Alignment with Minimap v2.30 for Oxford Nanopore reads then process with SAMtools v1.22.1
+minimap2 -ax map-ont -t 6 ncbi_dataset/ncbi_dataset/data/GCF_000006945.2/GCF_000006945.2_ASM694v2_genomic.fna SRR32410565_q20_filtlong.fastq > S_enterica_align_reads.sam
+samtools view -bS S_enterica_align_reads.sam -o S_enterica_align_reads.bam
+samtools sort S_enterica_align_reads.bam > S_enterica_align_reads_sorted.bam
+samtools index S_enterica_align_reads_sorted.bam
+
+# Index reference genome
+samtools faidx GCF_000006945.2_ASM694v2_genomic.fna
+
+# Details on how to install Clair3
+https://github.com/HKU-BAL/Clair3/blob/main/docs/gpu_quick_start.md
+
+# Install clair3
+#step 1: install the envrionment using brew
+brew install gnu-getopt bash llvm micromamba pypy3 samtools
+
+#step 2: install tensorflow and other dependecies using mamba
+mamba create -n clair3 python=3.9 autoconf automake zlib libdeflate cffi parallel -y
+eval "$(mamba shell hook --shell zsh)" #activate SHELL
+python -m pip install tensorflow-macos tensorflow-metal
+
+#step 3: build the dependecies
+git clone https://github.com/HKU-BAL/Clair3.git && cd Clair3
+make PREFIX=${CONDA_PREFIX}
+
+# Run this everytime to run Clair3
+mamba activate clair3
+export PATH="/opt/homebrew/opt/gnu-getopt/bin:$PATH"
+
+# Ran clair3 script as per manual
+./run_clair3.sh \
+--bam_fn=/Users/lionavu/Documents/U_of_Guelph/MBinf/BINF_6110/assignment_01/S_enterica_align_reads_sorted.bam \
+--ref_fn=/Users/lionavu/Documents/U_of_Guelph/MBinf/BINF_6110/assignment_01/ncbi_dataset/ncbi_dataset/data/GCF_000006945.2/GCF_000006945.2_ASM694v2_genomic.fna \
+--threads=6 \
+--platform=ont \
+--model_path=/opt/homebrew/Caskroom/miniforge/base/envs/clair3/bin/models/r1041_e82_400bps_sup_v500 \
+--include_all_ctgs \
+--no_phasing_for_fa \
+--output=clair3_output
+
+# Filter out low quality reads based on the INFO column
+grep -v "LowQuality" merge_output.vcf > filtered_merge_output.txt
+
+# Generate summary statistics with bcftools
+bcftools stats filtered_merge_output.txt > filtered_stats.vchk
+
+#Plot with vcfstats
+plot-vcfstats filtered_stats.vchk -p output_plots/
